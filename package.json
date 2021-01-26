@@ -1,0 +1,24 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Recipe App",
+  "main": "index.html",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/areddin409/forkify.git"
+  },
+  "author": "Andrew Reddin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/areddin409/forkify/issues"
+  },
+  "homepage": "https://github.com/areddin409/forkify#readme",
+  "devDependencies": {
+    "parcel": "^2.0.0-nightly.524",
+    "sass": "^1.32.4"
+  }
+}

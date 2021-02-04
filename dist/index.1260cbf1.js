@@ -493,9 +493,18 @@ const controlRecipes = async function () {
     // 2) Rendering Recipe
     _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
   } catch (error) {
-    console.log('🚀 ~ file: controller.js ~ line 27 ~ controlRecipes ~ error', error);
+    _viewsRecipeViewJsDefault.default.renderError();
   }
 };
+const controlSearchResults = async function () {
+  try {
+    await _modelJs.loadSearchResults('pizza');
+    console.log(_modelJs.state.search.results);
+  } catch (error) {
+    console.log('🚀 ~ file: controller.js ~ line 35 ~ controlSearchResults ~ error', error);
+  }
+};
+controlSearchResults();
 const init = function () {
   _viewsRecipeViewJsDefault.default.addHandlerRender(controlRecipes);
 };
@@ -12522,15 +12531,22 @@ _parcelHelpers.export(exports, "state", function () {
 _parcelHelpers.export(exports, "loadRecipe", function () {
   return loadRecipe;
 });
+_parcelHelpers.export(exports, "loadSearchResults", function () {
+  return loadSearchResults;
+});
 require('regenerator-runtime');
 var _configJs = require('./config.js');
 var _helpersJs = require('./helpers.js');
 const state = {
-  recipe: {}
+  recipe: {},
+  search: {
+    query: '',
+    results: []
+  }
 };
 const loadRecipe = async function (id) {
   try {
-    const data = await _helpersJs.getJSON(`${_configJs.API_URL}/${id}`);
+    const data = await _helpersJs.getJSON(`${_configJs.API_URL}${id}`);
     const {recipe} = data.data;
     state.recipe = {
       id: recipe.id,
@@ -12545,6 +12561,25 @@ const loadRecipe = async function (id) {
     console.log(state.recipe);
   } catch (err) {
     console.error('🚀 ~ file: model.js ~ line 27 ~ loadRecipe ~ err', err);
+    throw err;
+  }
+};
+const loadSearchResults = async function (query) {
+  try {
+    state.search.query = query;
+    const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${query}`);
+    console.log('🚀 ~ file: model.js ~ line 35 ~ loadSearchResults ~ data', data);
+    state.search.results = data.data.recipes.map(recipe => {
+      return {
+        id: recipe.id,
+        title: recipe.title,
+        publisher: recipe.publisher,
+        image: recipe.image_url
+      };
+    });
+  } catch (error) {
+    console.log('🚀 ~ file: model.js ~ line 35 ~ loadSearchResults ~ error', error);
+    throw error;
   }
 };
 
@@ -12557,7 +12592,7 @@ _parcelHelpers.export(exports, "API_URL", function () {
 _parcelHelpers.export(exports, "TIMEOUT_SECONDS", function () {
   return TIMEOUT_SECONDS;
 });
-const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes';
+const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
 const TIMEOUT_SECONDS = 10;
 
 },{"@parcel/transformer-js/lib/esmodule-helpers.js":"HNevC"}],"Fq8n8":[function(require,module,exports) {
@@ -12592,19 +12627,6 @@ _parcelHelpers.defineInteropFlag(exports);
 var _urlImgIconsSvg = require('url:../../img/icons.svg');
 var _urlImgIconsSvgDefault = _parcelHelpers.interopDefault(_urlImgIconsSvg);
 var _fractional = require('fractional');
-function _defineProperty(obj, key, value) {
-  if ((key in obj)) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-  return obj;
-}
 function _classPrivateFieldGet(receiver, privateMap) {
   var descriptor = privateMap.get(receiver);
   if (!descriptor) {
@@ -12638,6 +12660,8 @@ function _classPrivateFieldSet(receiver, privateMap, value) {
 }
 var _parentElement = new WeakMap();
 var _data = new WeakMap();
+var _message = new WeakMap();
+var _errorMessage = new WeakMap();
 var _clear = new WeakSet();
 var _generateMarkup = new WeakSet();
 var _generateMarkupIngredient = new WeakSet();
@@ -12654,21 +12678,57 @@ class RecipeView {
       writable: true,
       value: void 0
     });
-    _defineProperty(this, "renderSpinner", function () {
-      const markup = `
+    _message.set(this, {
+      writable: true,
+      value: ``
+    });
+    _errorMessage.set(this, {
+      writable: true,
+      value: `We could not find that recipe. Please try another one!`
+    });
+  }
+  render(data) {
+    _classPrivateFieldSet(this, _data, data);
+    const markup = _classPrivateMethodGet(this, _generateMarkup, _generateMarkup2).call(this);
+    _classPrivateMethodGet(this, _clear, _clear2).call(this);
+    _classPrivateFieldGet(this, _parentElement).insertAdjacentHTML('afterbegin', markup);
+  }
+  renderSpinner() {
+    const markup = `
     <div class="spinner">
     <svg>
     <use href="${_urlImgIconsSvgDefault.default}#icon-loader"></use>
     </svg>
     </div> 
     `;
-      _classPrivateFieldGet(this, _parentElement).innerHTML = '';
-      _classPrivateFieldGet(this, _parentElement).insertAdjacentHTML('afterbegin', markup);
-    });
+    _classPrivateMethodGet(this, _clear, _clear2).call(this);
+    _classPrivateFieldGet(this, _parentElement).insertAdjacentHTML('afterbegin', markup);
   }
-  render(data) {
-    _classPrivateFieldSet(this, _data, data);
-    const markup = _classPrivateMethodGet(this, _generateMarkup, _generateMarkup2).call(this);
+  renderError(message = _classPrivateFieldGet(this, _errorMessage)) {
+    const markup = `
+     <div class="error">
+            <div>
+              <svg>
+                <use href="${_urlImgIconsSvgDefault.default}#icon-alert-triangle"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>
+          `;
+    _classPrivateMethodGet(this, _clear, _clear2).call(this);
+    _classPrivateFieldGet(this, _parentElement).insertAdjacentHTML('afterbegin', markup);
+  }
+  renderMessage(message = _classPrivateFieldGet(this, _message)) {
+    const markup = `
+     <div class="message">
+            <div>
+              <svg>
+                <use href="${_urlImgIconsSvgDefault.default}#icon-smile"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>
+          `;
     _classPrivateMethodGet(this, _clear, _clear2).call(this);
     _classPrivateFieldGet(this, _parentElement).insertAdjacentHTML('afterbegin', markup);
   }

@@ -509,8 +509,9 @@ const controlPagination = function (goToPage) {
 const controlServings = function (newServings) {
   // 1) update the recipe servings (in state)
   model.updateServings(newServings); // 2) update the recipe view
+  // recipeView.render(model.state.recipe);
 
-  _recipeView.default.render(model.state.recipe);
+  _recipeView.default.update(model.state.recipe);
 };
 
 const init = function () {
@@ -524,7 +525,7 @@ const init = function () {
 };
 
 init();
-},{"./model.js":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView.js":"bcae1aced0301b01ccacb3e6f7dfede8","core-js/stable":"365c275b2aeb4e58604c85c803750508","regenerator-runtime/runtime":"e155e0d3930b156f86c48e8d05522b16","./views/searchView.js":"c5d792f7cac03ef65de30cc0fbb2cae7","./views/resultsView.js":"eacdbc0d50ee3d2819f3ee59366c2773","./views/paginationView.js":"d2063f3e7de2e4cdacfcb5eb6479db05"}],"aabf248f40f7693ef84a0cb99f385d1f":[function(require,module,exports) {
+},{"./model.js":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView.js":"bcae1aced0301b01ccacb3e6f7dfede8","./views/searchView.js":"c5d792f7cac03ef65de30cc0fbb2cae7","./views/resultsView.js":"eacdbc0d50ee3d2819f3ee59366c2773","./views/paginationView.js":"d2063f3e7de2e4cdacfcb5eb6479db05","core-js/stable":"365c275b2aeb4e58604c85c803750508","regenerator-runtime/runtime":"e155e0d3930b156f86c48e8d05522b16"}],"aabf248f40f7693ef84a0cb99f385d1f":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -799,7 +800,116 @@ class RecipeView extends _View.default {
 var _default = new RecipeView();
 
 exports.default = _default;
-},{"url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd","fractional":"ddbc156a7c16e105c8df04e9fdec967d","./View.js":"61b7a1b097e16436be3d54c2f1828c73"}],"71f351e2f82d6b548c64a0caf8bdfedd":[function(require,module,exports) {
+},{"./View.js":"61b7a1b097e16436be3d54c2f1828c73","url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd","fractional":"ddbc156a7c16e105c8df04e9fdec967d"}],"61b7a1b097e16436be3d54c2f1828c73":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+class View {
+  constructor() {
+    _defineProperty(this, "_data", void 0);
+  }
+
+  render(data) {
+    if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+    this._data = data;
+
+    const markup = this._generateMarkup();
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+
+  update(data) {
+    if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+    this._data = data;
+
+    const newMarkup = this._generateMarkup();
+
+    const newDOM = document.createRange().createContextualFragment(newMarkup);
+    const newElements = Array.from(newDOM.querySelectorAll('*'));
+    const curElements = Array.from(this._parentElement.querySelectorAll('*'));
+    newElements.forEach((newEl, i) => {
+      const curEl = curElements[i]; // console.log(curEl, newEl.isEqualNode(curEl));
+      //Updates changed TEXT
+
+      if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== '') {
+        curEl.textContent = newEl.textContent;
+      } // Updates changed ATTRIBUTES
+
+
+      if (!newEl.isEqualNode(curEl)) {
+        Array.from(newEl.attributes).forEach(attribute => curEl.setAttribute(attribute.name, attribute.value));
+      }
+    });
+  }
+
+  _clear() {
+    this._parentElement.innerHTML = '';
+  }
+
+  renderSpinner() {
+    const markup = `
+    <div class="spinner">
+    <svg>
+    <use href="${_icons.default}#icon-loader"></use>
+    </svg>
+    </div> 
+    `;
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+
+  renderError(message = this._errorMessage) {
+    const markup = `
+     <div class="error">
+            <div>
+              <svg>
+                <use href="${_icons.default}#icon-alert-triangle"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>
+          `;
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+
+  renderMessage(message = this._message) {
+    const markup = `
+     <div class="message">
+            <div>
+              <svg>
+                <use href="${_icons.default}#icon-smile"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>
+          `;
+
+    this._clear();
+
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+
+}
+
+exports.default = View;
+},{"url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd"}],"71f351e2f82d6b548c64a0caf8bdfedd":[function(require,module,exports) {
 module.exports = require('./bundle-url').getBundleURL() + require('./relative-path')("b321e4cd92df2301", "03860e6069ceba63");
 },{"./bundle-url":"2146da1905b95151ed14d455c784e7b7","./relative-path":"1b9943ef25c7bbdf0dd1b9fa91880a6c"}],"2146da1905b95151ed14d455c784e7b7":[function(require,module,exports) {
 "use strict";
@@ -1281,7 +1391,7 @@ Fraction.primeFactors = function(n)
 
 module.exports.Fraction = Fraction
 
-},{}],"61b7a1b097e16436be3d54c2f1828c73":[function(require,module,exports) {
+},{}],"c5d792f7cac03ef65de30cc0fbb2cae7":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1289,84 +1399,165 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+class SearchView {
+  constructor() {
+    _defineProperty(this, "_parentElement", document.querySelector('.search'));
+  }
+
+  getQuery() {
+    const query = this._parentElement.querySelector('.search__field').value;
+
+    this._clearInput();
+
+    return query;
+  }
+
+  _clearInput() {
+    this._parentElement.querySelector('.search__field').value = '';
+  }
+
+  addHandlerSearch(handler) {
+    this._parentElement.addEventListener('submit', function (event) {
+      event.preventDefault();
+      handler();
+    });
+  }
+
+}
+
+var _default = new SearchView();
+
+exports.default = _default;
+},{}],"eacdbc0d50ee3d2819f3ee59366c2773":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _View = _interopRequireDefault(require("./View.js"));
+
 var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-class View {
-  constructor() {
-    _defineProperty(this, "_data", void 0);
+class ResultsView extends _View.default {
+  constructor(...args) {
+    super(...args);
+
+    _defineProperty(this, "_parentElement", document.querySelector('.results'));
+
+    _defineProperty(this, "_errorMessage", `No recipes found for your query! Please try again!`);
+
+    _defineProperty(this, "_message", ``);
   }
 
-  render(data) {
-    if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
-    this._data = data;
-
-    const markup = this._generateMarkup();
-
-    this._clear();
-
-    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  _generateMarkup() {
+    return this._data.map(this._generateMarkupPreview).join('');
   }
 
-  _clear() {
-    this._parentElement.innerHTML = '';
-  }
-
-  renderSpinner() {
-    const markup = `
-    <div class="spinner">
-    <svg>
-    <use href="${_icons.default}#icon-loader"></use>
-    </svg>
-    </div> 
+  _generateMarkupPreview(result) {
+    return `
+          <li class="preview">
+            <a class="preview__link" href="#${result.id}">
+              <figure class="preview__fig">
+                <img src="${result.image}" alt="${result.title}" />
+              </figure>
+              <div class="preview__data">
+                <h4 class="preview__title">${result.title}</h4>
+                <p class="preview__publisher">${result.publisher}</p>
+              </div>
+            </a>
+          </li>
     `;
-
-    this._clear();
-
-    this._parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-
-  renderError(message = this._errorMessage) {
-    const markup = `
-     <div class="error">
-            <div>
-              <svg>
-                <use href="${_icons.default}#icon-alert-triangle"></use>
-              </svg>
-            </div>
-            <p>${message}</p>
-          </div>
-          `;
-
-    this._clear();
-
-    this._parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-
-  renderMessage(message = this._message) {
-    const markup = `
-     <div class="message">
-            <div>
-              <svg>
-                <use href="${_icons.default}#icon-smile"></use>
-              </svg>
-            </div>
-            <p>${message}</p>
-          </div>
-          `;
-
-    this._clear();
-
-    this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
 
 }
 
-exports.default = View;
-},{"url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd"}],"365c275b2aeb4e58604c85c803750508":[function(require,module,exports) {
+var _default = new ResultsView();
+
+exports.default = _default;
+},{"./View.js":"61b7a1b097e16436be3d54c2f1828c73","url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd"}],"d2063f3e7de2e4cdacfcb5eb6479db05":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _View = _interopRequireDefault(require("./View.js"));
+
+var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+class PaginationView extends _View.default {
+  constructor(...args) {
+    super(...args);
+
+    _defineProperty(this, "_parentElement", document.querySelector('.pagination'));
+  }
+
+  addHandlerClick(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn--inline');
+      if (!btn) return;
+      const goToPage = +btn.dataset.goto;
+      handler(goToPage);
+    });
+  }
+
+  _generateMarkup() {
+    const currentPage = this._data.page;
+    const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
+    const buttonNext = `
+      <button data-goto="${currentPage + 1}" class="btn--inline pagination__btn--next">
+      <span>Page ${currentPage + 1}</span>
+      <svg class="search__icon">
+      <use href="${_icons.default}#icon-arrow-right"></use>
+      </svg>
+      </button>
+      `;
+    const buttonPrev = `
+      <button data-goto="${currentPage - 1}" class="btn--inline pagination__btn--prev">
+        <svg class="search__icon">
+          <use href="${_icons.default}#icon-arrow-left"></use>
+        </svg>
+        <span>Page ${currentPage - 1}</span>
+      </button>
+             `; // Page 1, and there are other pages
+
+    if (currentPage === 1 && numPages > 1) {
+      return buttonNext;
+    } // last page
+
+
+    if (currentPage === numPages && numPages > 1) {
+      return buttonPrev;
+    } // other page
+
+
+    if (currentPage < numPages) {
+      return [buttonNext, buttonPrev];
+    } // Page 1, and there are NO other pages
+
+
+    return ``;
+  }
+
+}
+
+var _default = new PaginationView();
+
+exports.default = _default;
+},{"./View.js":"61b7a1b097e16436be3d54c2f1828c73","url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd"}],"365c275b2aeb4e58604c85c803750508":[function(require,module,exports) {
 require('../es');
 require('../web');
 var path = require('../internals/path');
@@ -13966,172 +14157,6 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],"c5d792f7cac03ef65de30cc0fbb2cae7":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-class SearchView {
-  constructor() {
-    _defineProperty(this, "_parentElement", document.querySelector('.search'));
-  }
-
-  getQuery() {
-    const query = this._parentElement.querySelector('.search__field').value;
-
-    this._clearInput();
-
-    return query;
-  }
-
-  _clearInput() {
-    this._parentElement.querySelector('.search__field').value = '';
-  }
-
-  addHandlerSearch(handler) {
-    this._parentElement.addEventListener('submit', function (event) {
-      event.preventDefault();
-      handler();
-    });
-  }
-
-}
-
-var _default = new SearchView();
-
-exports.default = _default;
-},{}],"eacdbc0d50ee3d2819f3ee59366c2773":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _View = _interopRequireDefault(require("./View.js"));
-
-var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-class ResultsView extends _View.default {
-  constructor(...args) {
-    super(...args);
-
-    _defineProperty(this, "_parentElement", document.querySelector('.results'));
-
-    _defineProperty(this, "_errorMessage", `No recipes found for your query! Please try again!`);
-
-    _defineProperty(this, "_message", ``);
-  }
-
-  _generateMarkup() {
-    return this._data.map(this._generateMarkupPreview).join('');
-  }
-
-  _generateMarkupPreview(result) {
-    return `
-          <li class="preview">
-            <a class="preview__link" href="#${result.id}">
-              <figure class="preview__fig">
-                <img src="${result.image}" alt="${result.title}" />
-              </figure>
-              <div class="preview__data">
-                <h4 class="preview__title">${result.title}</h4>
-                <p class="preview__publisher">${result.publisher}</p>
-              </div>
-            </a>
-          </li>
-    `;
-  }
-
-}
-
-var _default = new ResultsView();
-
-exports.default = _default;
-},{"./View.js":"61b7a1b097e16436be3d54c2f1828c73","url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd"}],"d2063f3e7de2e4cdacfcb5eb6479db05":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _View = _interopRequireDefault(require("./View.js"));
-
-var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-class PaginationView extends _View.default {
-  constructor(...args) {
-    super(...args);
-
-    _defineProperty(this, "_parentElement", document.querySelector('.pagination'));
-  }
-
-  addHandlerClick(handler) {
-    this._parentElement.addEventListener('click', function (e) {
-      const btn = e.target.closest('.btn--inline');
-      if (!btn) return;
-      const goToPage = +btn.dataset.goto;
-      handler(goToPage);
-    });
-  }
-
-  _generateMarkup() {
-    const currentPage = this._data.page;
-    const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
-    const buttonNext = `
-      <button data-goto="${currentPage + 1}" class="btn--inline pagination__btn--next">
-      <span>Page ${currentPage + 1}</span>
-      <svg class="search__icon">
-      <use href="${_icons.default}#icon-arrow-right"></use>
-      </svg>
-      </button>
-      `;
-    const buttonPrev = `
-      <button data-goto="${currentPage - 1}" class="btn--inline pagination__btn--prev">
-        <svg class="search__icon">
-          <use href="${_icons.default}#icon-arrow-left"></use>
-        </svg>
-        <span>Page ${currentPage - 1}</span>
-      </button>
-             `; // Page 1, and there are other pages
-
-    if (currentPage === 1 && numPages > 1) {
-      return buttonNext;
-    } // last page
-
-
-    if (currentPage === numPages && numPages > 1) {
-      return buttonPrev;
-    } // other page
-
-
-    if (currentPage < numPages) {
-      return [buttonNext, buttonPrev];
-    } // Page 1, and there are NO other pages
-
-
-    return ``;
-  }
-
-}
-
-var _default = new PaginationView();
-
-exports.default = _default;
-},{"./View.js":"61b7a1b097e16436be3d54c2f1828c73","url:../../img/icons.svg":"71f351e2f82d6b548c64a0caf8bdfedd"}]},{},["153073a9c9cfcf213fdb654583936edc","aa4f9eb55dae43e70f6d2d3aa39dca18","175e469a7ea7db1c8c0744d04372621f"], null)
+},{}]},{},["153073a9c9cfcf213fdb654583936edc","aa4f9eb55dae43e70f6d2d3aa39dca18","175e469a7ea7db1c8c0744d04372621f"], null)
 
 //# sourceMappingURL=controller.c8b857bb.js.map
